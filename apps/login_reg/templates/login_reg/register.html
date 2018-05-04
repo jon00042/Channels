@@ -34,8 +34,6 @@
 {% endblock %} {% block scripts %}
 <script>
     let beforeAjaxSend = function (xhr, settings) {
-        console.log('beforeAjaxSend fired')
-        console.log(this)
         let csrftoken = Cookies.get('csrftoken');
         if (!this.crossDomain) {
             xhr.setRequestHeader("X-CSRFToken", csrftoken);

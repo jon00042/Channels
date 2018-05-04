@@ -7,12 +7,12 @@
         <div class="col-12">
             <div class="row">
                 <div class="content-pane">
-                    <div></div>
+                    <div id="messages-list"></div>
                 </div>
             </div>
             <div class="col-12 p-0 mt-4">
                 <form action="">
-                    <input type="text" class="form-control">
+                    <input type="text" class="form-control" id="send-message">
                 </form>
             </div>
         </div>
@@ -24,6 +24,39 @@
 <script>
     $(document).ready(function() {
         let connection = new WebSocket("ws://localhost:8000/ws/chat/{{room_name}}")
+
+        $("#send-message").keypress(function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                let message = {
+                    "message": $(this).val(),
+                }
+                connection.send(JSON.stringify(message));
+                $(this).val(null);
+            }
+        });
+
+        connection.onmessage = function(response) {
+            let data = JSON.parse(response.data);
+            if (data.success) {
+                if (data.notification) {
+                    let msgDiv = $("<div></div>");
+                    msgDiv.addClass("notification");
+                    msgDiv.text(data.notification);
+                    $("#messages-list").append(msgDiv);
+                } else if (data.message) {
+                    let userSpan = createElement("span", data.username + ": ", ["username"]);
+                    let msgSpan = createElement("span", data.message);
+                    let msgDiv = createElement("div", null, ["message"]);
+                    msgDiv.append(userSpan).append(msgSpan);
+                    $("#messages-list").append(msgDiv);
+                }
+
+                $(".content-pane").animate({
+                    scrollTop: $(".content-pane").prop("scrollHeight")
+                }, 2000)
+            }
+        }
     });
 </script>
 {% endblock %}
